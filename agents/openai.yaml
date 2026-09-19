@@ -1,4 +1,4 @@
 interface:
-  display_name: "Yunshu ImageGen"
-  short_description: "用我的云枢 API Key 生成或编辑图片"
-  default_prompt: "用我的云枢 API Key 生成或编辑图片。"
+  display_name: "Yunshu Image Gen"
+  short_description: "Generate or edit images through Yunshu"
+  default_prompt: "Use $yunshu-imagegen to make or edit an image for this project."

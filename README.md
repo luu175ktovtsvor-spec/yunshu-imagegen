@@ -2,6 +2,8 @@
 
 一个独立的 Codex skill，通过云枢 API 的 OpenAI 兼容 Images 接口生图或带 Logo 编辑图片。它适用于没有 ChatGPT 会员、但已经在 CC Switch/Codex 中配置 Yunshu API Key 的用户。
 
+Skill 的结构、提示词规范和示例基于 Codex 系统 `imagegen` Skill，并按 Apache License 2.0 改造成云枢 API 执行路径。
+
 ## 安装
 
 将仓库目录复制到 Codex skills 目录：
