@@ -1,22 +1,43 @@
 ---
 name: yunshu-imagegen
-description: Generate or edit images through a Yunshu/Sub2API OpenAI-compatible Images API when Codex's native image_gen tool is unavailable, especially for users connected with a Yunshu API key instead of a ChatGPT membership.
+description: Generate or edit raster images with a Yunshu API key when the current client does not expose Codex's built-in image_gen tool, including posters, illustrations, product images, and edits that use a logo or other reference image.
 ---
 
-# Yunshu ImageGen
+# Yunshu Image Generation
 
-Use this skill when the user explicitly asks for `$yunshu-imagegen`, wants image generation through a Yunshu API key, or cannot access Codex's native `image_gen` tool because the client is using a custom provider without a membership login.
+Use this skill when the user asks to create or edit an image through their Yunshu API key, or when the current Codex client does not provide the built-in `image_gen` tool. It is the Yunshu route for the same kinds of image work handled by Codex's image generation workflow.
 
-This is an API-backed compatibility skill. It is separate from Codex's native `image_gen` tool and does not change CC Switch, Codex configuration, server groups, or upstream routing.
+This skill uses the Yunshu Images API. It is separate from Codex's native `image_gen` tool and does not change CC Switch, Codex configuration, server groups, or upstream routing.
 
-## Workflow
+## When to use
 
-1. Decide whether the request is a new image (`generate`) or an edit/composite with a reference image (`edit`). Use `edit` when the user supplies a logo or other image that must be included.
-2. Preserve exact requested text. For posters, explicitly state the target aspect ratio and size in the prompt and keep text away from the edges.
-3. Run `scripts/yunshu_imagegen.py` from this skill directory. The script defaults to `https://api.zzyppz.cn/v1` and `gpt-image-2`.
-4. The script first checks `YUNSHU_API_KEY`. If it is absent, it reads a Yunshu provider's `experimental_bearer_token` and `base_url` from `$CODEX_HOME/config.toml` when the host is `api.zzyppz.cn`. Never print the key.
-5. Use an opaque background by default. The script converts an upstream RGBA response to RGB in this mode, which prevents a full-image alpha channel from becoming a white or dark composite in clients. Only pass `--background transparent` when the user explicitly asks for transparency.
-6. Inspect the saved PNG after generation and report its absolute path, dimensions, and whether the request used `generate` or `edit`.
+- The user asks to use a Yunshu API key or a client connected to Yunshu.
+- The current client does not expose Codex's built-in `image_gen` tool.
+- The user wants a generated image, a poster, or an edit that includes a logo or other reference image.
+
+## When not to use
+
+- The user has access to the native `image_gen` tool and has not asked to use Yunshu.
+- The request is better handled by editing an SVG, HTML/CSS, or another code-native asset.
+
+## Modes
+
+There are two request types:
+
+- `generate`: create a new image from a prompt.
+- `edit`: create or change an image while using a supplied logo, reference image, or other input image.
+
+Use `edit` when the user wants a logo included in the result. Keep the supplied logo recognizable and do not redraw it as a new logo.
+Assume `generate` when the user has not asked to change an existing image or include a supplied image.
+
+## Rules
+
+- Keep the user's requested subject, style, aspect ratio, and exact text. For posters, keep important text away from the edges.
+- Run `scripts/yunshu_imagegen.py` from this skill directory. It defaults to `https://api.zzyppz.cn/v1` and the `gpt-image-2` Images API model.
+- Read `YUNSHU_API_KEY` first. If it is not set, the script may read a Yunshu provider's `experimental_bearer_token` and `base_url` from `$CODEX_HOME/config.toml` when the provider points to `api.zzyppz.cn`.
+- Never print or put the API key in a prompt, filename, log, or user-facing response.
+- Use an opaque background by default. In this mode the script converts an upstream 8-bit RGBA PNG to RGB so clients do not composite the whole image against white or black. Pass `--background transparent` only when transparency is requested.
+- Inspect every saved image and report its absolute path, dimensions, and whether the request used `generate` or `edit`.
 
 ## Commands
 
@@ -30,8 +51,8 @@ python3 scripts/yunshu_imagegen.py edit \
   --size 1024x1536 --output /absolute/path/output.png
 ```
 
-For a logo, describe it as a supporting insert/reference and require that it remain recognizable, with no redraw or invented replacement. Do not use the API key in prompts, filenames, logs, or user-facing output.
+For a logo, describe it as a supporting insert/reference and require that it remain recognizable, with no redraw or invented replacement.
 
-## API boundary
+## API
 
-The script calls `/images/generations` for `generate` and `/images/edits` for `edit`. This gives users a usable image workflow without ChatGPT membership, but it does not make the native Codex `image_gen` tool appear in a client that does not expose that tool.
+The script calls `/images/generations` for `generate` and `/images/edits` for `edit`. This gives users an image workflow through their Yunshu API key; it does not make the native Codex `image_gen` tool appear in a client that does not expose it.
