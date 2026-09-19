@@ -80,7 +80,7 @@ Use case: background-extraction
 Asset type: transparent product cutout
 Primary request: isolate the requested subject as a clean cutout
 Input images: Image 1: edit target, preserve the subject identity and proportions
-Constraints: genuinely transparent background; preserve fine edges, hair, thin parts, and label text; no halo; no restyling; no watermark
+Constraints: genuinely transparent background; preserve fine edges, hair, thin parts, and label text; no restyling; no watermark
 Avoid: white or checkerboard baked into the pixels, cropped edges, invented details
 ```
 

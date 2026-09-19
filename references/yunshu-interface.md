@@ -24,6 +24,27 @@ The agent should construct one logical ImageGen request with these fields:
 | `input_fidelity` | Input preservation level | Use only for models that support it; never silently claim support. |
 | `output_destination` | Final save location | Follow the user's destination; otherwise use the current project's output convention. |
 
+## Yunshu transport mapping
+
+Yunshu/Sub2API exposes two different image paths. Do not collapse their model roles:
+
+### Images API
+
+- New image: `POST /v1/images/generations`.
+- Existing-image edit or compositing: `POST /v1/images/edits`.
+- `model` is the image model, such as the provider's exposed `gpt-image-*` model.
+- `prompt`, `n`, `size`, `quality`, `background`, `output_format`, `output_compression`, `moderation`, `response_format`, `image`, and `mask` belong to this image request when the provider exposes them.
+
+### Responses image tool
+
+- Endpoint: `POST /v1/responses`.
+- Top-level `model` is the Responses/main model that executes the request.
+- `tools[]` contains `{ "type": "image_generation", ... }`; its `model` is the image model.
+- Preserve the tool's `action`, `size`, `quality`, `background`, `output_format`, and other supported fields.
+- A gateway may inject a configured default image model when the tool omits one; this is provider routing, not a change to the user's creative prompt.
+
+When the user requires an exact image model, size, or quality, prefer the Images API path when the active Yunshu integration exposes it. Responses/OAuth upstreams can normalize or downgrade image metadata.
+
 ## Intent mapping
 
 - `generate` with no input images: create from the prompt.
@@ -39,12 +60,22 @@ The agent should construct one logical ImageGen request with these fields:
 - If Yunshu does not expose a field, preserve the intent in the prompt, report the limitation, and do not silently substitute a different meaning.
 - Treat response model names and returned dimensions as evidence; do not infer hidden upstream behavior.
 
+## Three-layer result verification
+
+Compare these layers before reporting success:
+
+1. **Requested:** model, size, quality, background, output format, input images, and intent.
+2. **Effective response:** returned model/tool metadata, quality, size, format, and route/executor when available.
+3. **Artifact:** actual file type, dimensions, transparency, and edit/reference invariants.
+
+If the effective response or artifact differs from the request, report the downgrade or provider normalization explicitly. HTTP 200 plus a valid image is not proof that every requested option was honored.
+
 ## Result acceptance
 
 After each request, inspect the returned artifact for:
 
 - requested subject, style, composition, and exact text
 - actual dimensions and aspect ratio
-- transparency and edge quality when requested
+- transparency when requested
 - identity/reference invariants for edits and composites
 - absence of unwanted text, objects, logos, or watermarks

@@ -18,6 +18,7 @@ Rules:
 - Use this skill only when the user explicitly asks for Yunshu or when the active image-generation route is Yunshu.
 - Keep the built-in ImageGen intent and prompt semantics: distinguish `generate` from `edit`, preserve reference-image roles, and keep user constraints exact.
 - Pass the ImageGen request parameters described in [Yunshu interface mapping](references/yunshu-interface.md) without silently dropping supported fields.
+- Keep the Yunshu transport mapping exact: Images API generation/edit requests use an image model directly; Responses requests use a separate main model plus an `image_generation` tool model.
 - Use the user-requested model when it is exposed by Yunshu; otherwise use the configured Yunshu default and report the selected client-facing model name.
 - Do not claim an upstream model identity, quality, or capability unless the Yunshu response or current provider documentation confirms it.
 - Never expose API keys, bearer tokens, provider credentials, or private request headers in prompts, filenames, logs, or user-facing output.
@@ -83,7 +84,7 @@ Assume the user wants a new image unless they clearly ask to change an existing 
    - If the user's prompt is generic, add tasteful augmentation only when it materially improves output quality.
 9. Assemble the request with the full parameter mapping in [Yunshu interface mapping](references/yunshu-interface.md). Keep creative prompt content separate from transport fields such as model, size, background, output format, and output path.
 10. Submit the request through the Yunshu ImageGen interface.
-11. Inspect outputs and validate: subject, style, composition, text accuracy, dimensions, transparency, and invariants/avoid items.
+11. Inspect outputs and validate: subject, style, composition, text accuracy, requested parameters, actual returned metadata, dimensions, transparency, and invariants/avoid items.
 12. Iterate with a single targeted change, then re-check.
 13. For preview-only work, render the image inline and keep the saved output in the task's preview/output area unless the user named another destination.
 14. For project-bound work, save the selected artifact into the workspace and update any consuming code or references.
