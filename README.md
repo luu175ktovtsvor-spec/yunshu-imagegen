@@ -1,41 +1,18 @@
 # Yunshu ImageGen
 
-一个独立的 Codex skill，通过云枢 API 的 OpenAI 兼容 Images 接口生图或带 Logo 编辑图片。它适用于没有 ChatGPT 会员、但已经在 CC Switch/Codex 中配置 Yunshu API Key 的用户。
+一个纯 Agent 版 Codex skill，通过 Yunshu ImageGen 接口生成或编辑图片。它沿用 Codex 内置 ImageGen 的决策树、提示词结构、参考图语义和质量检查，只替换 Yunshu 的接口参数映射。
 
-Skill 的结构、提示词规范和示例基于 Codex 系统 `imagegen` Skill，并按 Apache License 2.0 改造成云枢 API 执行路径。
+Skill 的结构、提示词规范和示例基于 Codex 系统 `imagegen` Skill，并按 Apache License 2.0 改造成 Yunshu Agent 路由。
 
-## 安装
+## 使用
 
-将仓库目录复制到 Codex skills 目录：
+在 Codex 中调用 `$yunshu-imagegen`，或在已绑定 Yunshu ImageGen 的代理流程中直接提出图片生成/编辑需求。代理会根据 [接口映射](references/yunshu-interface.md) 组装请求；不需要用户运行本地脚本。
 
-```bash
-cp -R yunshu-imagegen "$CODEX_HOME/skills/yunshu-imagegen"
-```
+纯文本请求、参考图生成、已有图片编辑、Logo 合成、透明背景、海报和多素材批量任务都遵循系统 ImageGen 的判断与提示词规则。
 
-如果没有设置 `CODEX_HOME`，默认目录是 `~/.codex/skills`。
+## 参考
 
-脚本会优先读取 `YUNSHU_API_KEY`；如果没有设置，会从 `$CODEX_HOME/config.toml` 中寻找 `api.zzyppz.cn` Provider 的 `experimental_bearer_token`。也可以显式设置：
-
-```bash
-export YUNSHU_API_KEY='你的云枢 API Key'
-export YUNSHU_BASE_URL='https://api.zzyppz.cn/v1'
-```
-
-## 用法
-
-在 Codex 中调用 `$yunshu-imagegen`，或直接运行脚本：
-
-```bash
-python3 scripts/yunshu_imagegen.py generate \
-  --prompt "一张中国风中秋海报" \
-  --size 1024x1536 \
-  --output ./output/mid-autumn.png
-
-python3 scripts/yunshu_imagegen.py edit \
-  --image ./logo.png \
-  --prompt "将 Image 1 作为原始 Logo 放在海报顶部，保持 Logo 清晰可辨" \
-  --size 1024x1536 \
-  --output ./output/with-logo.png
-```
-
-默认模型是 `gpt-image-2`，默认背景是 `opaque`。部分 OpenAI 兼容上游会在 `opaque` 请求中错误返回带 Alpha 的 PNG；脚本会把这种 8-bit RGBA 图片转换为真正无 Alpha 的 RGB PNG，避免客户端合成出整张白边或暗边。只有传入 `--background transparent` 时才保留透明通道。脚本不会打印 API Key，也不会修改 Codex、CC Switch 或服务器配置。
+- [Skill 主规则](SKILL.md)
+- [Yunshu 接口映射](references/yunshu-interface.md)
+- [Prompting 规则](references/prompting.md)
+- [示例 Prompt](references/sample-prompts.md)
